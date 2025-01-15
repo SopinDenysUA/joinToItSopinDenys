@@ -3,6 +3,9 @@
 @section('content')
     <div class="container">
         <h1>Компанії</h1>
+        <a href="{{ route('companies.create') }}" class="nav-link">
+            <p><strong>Додати компанію</strong></p>
+        </a>
         <table class="datatable table table-bordered">
             <thead>
             <tr>

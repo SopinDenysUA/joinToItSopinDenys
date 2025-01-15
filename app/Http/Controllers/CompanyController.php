@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CompanyController extends Controller
 {
@@ -21,7 +22,7 @@ class CompanyController extends Controller
      */
     public function create()
     {
-        //
+        return view('admin.companies.form');
     }
 
     /**
@@ -32,7 +33,7 @@ class CompanyController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'nullable|email',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048|dimensions:min_width=100,min_height=100',
             'website' => 'nullable|url',
         ]);
 
@@ -48,7 +49,7 @@ class CompanyController extends Controller
             'website' => $request->website,
         ]);
 
-        return redirect()->route('companies')->with('success', 'Компания успешно добавлена!');
+        return redirect()->route('companies.index')->with('success', 'Компанія успішно добавлена');
     }
 
     /**
@@ -64,7 +65,7 @@ class CompanyController extends Controller
      */
     public function edit(Company $company)
     {
-        //
+        return view('admin.companies.form', compact('company'));
     }
 
     /**
@@ -72,7 +73,28 @@ class CompanyController extends Controller
      */
     public function update(Request $request, Company $company)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048|dimensions:min_width=100,min_height=100',
+            'website' => 'nullable|url',
+        ]);
+
+        if ($request->hasFile('logo')) {
+            if ($company->logo) {
+                Storage::disk('public')->delete($company->logo);
+            }
+            $logoPath = $request->file('logo')->store('logos', 'public');
+        }
+
+        $company->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'logo' => $logoPath,
+            'website' => $request->website,
+        ]);
+
+        return redirect()->route('companies.index')->with('success', 'Компанія успішно обновлена');
     }
 
     /**
@@ -86,6 +108,6 @@ class CompanyController extends Controller
 
         $company->delete();
 
-        return redirect()->route('companies.index')->with('success', 'Компания успешно удалена!');
+        return redirect()->route('companies.index')->with('success', 'Компанія успішно видалена');
     }
 }
