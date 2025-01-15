@@ -8,6 +8,8 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Mail\CompanyCreated;
+use Illuminate\Support\Facades\Mail;
 
 class CompanyController extends Controller
 {
@@ -69,6 +71,8 @@ class CompanyController extends Controller
         $data['logo'] = $logoPath;
 
         $company = $this->_companyService->storeCompany($data);
+
+        $this->_companyService->sendByMail($company);
 
         return redirect()->route('companies.index')->with('success', "Компанія {$company->name} успішно добавлена");
     }

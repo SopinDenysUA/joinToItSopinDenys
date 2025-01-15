@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Mail\CompanyCreated;
 use App\Models\Company;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Mail;
 
 class CompanyService
 {
@@ -51,5 +53,14 @@ class CompanyService
     public function getAll(): Collection
     {
         return Company::all();
+    }
+
+    /**
+     * @param $company
+     * @return void
+     */
+    public function sendByMail($company): void
+    {
+        Mail::to(env('MAIL_FROM_ADMIN'))->send(new CompanyCreated($company));
     }
 }
