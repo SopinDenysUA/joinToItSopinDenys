@@ -2,16 +2,19 @@
 
 @section('content')
     <div class="container">
-        <h1>Сотрудники</h1>
+        <h1>Співробітники</h1>
+        <a href="{{ route('employees.create') }}" class="nav-link">
+            <p><strong>Додати співробітника</strong></p>
+        </a>
         <table class="datatable table table-bordered">
             <thead>
             <tr>
-                <th>Имя</th>
-                <th>Фамилия</th>
-                <th>Компания</th>
+                <th>Ім'я</th>
+                <th>Прізвище</th>
+                <th>Компанія</th>
                 <th>Email</th>
                 <th>Телефон</th>
-                <th>Действия</th>
+                <th>Дії</th>
             </tr>
             </thead>
             <tbody>
@@ -23,11 +26,11 @@
                     <td>{{ $employee->email }}</td>
                     <td>{{ $employee->phone }}</td>
                     <td>
-                        <a href="{{ route('employees.edit', $employee->id) }}" class="btn btn-primary">Редактировать</a>
+                        <a href="{{ route('employees.edit', $employee->id) }}" class="btn btn-primary">Редагування</a>
                         <form action="{{ route('employees.destroy', $employee->id) }}" method="POST" style="display:inline;">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-danger">Удалить</button>
+                            <button type="submit" class="btn btn-danger">Видалити</button>
                         </form>
                     </td>
                 </tr>
