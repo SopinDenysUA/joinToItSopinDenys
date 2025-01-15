@@ -3,91 +3,137 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
-use App\Models\Company;
+use App\Services\EmployeeService;
+use App\Services\CompanyService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class EmployeeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected EmployeeService $_employeesService;
+    protected CompanyService $_companyService;
+
+    public function __construct(EmployeeService $employeeService, CompanyService $companyService)
     {
-        $employees = Employee::paginate(10);
-//        $employees = Employee::with('company')->paginate(10);
-        return view('employees', compact('employees'));
+        $this->_employeesService = $employeeService;
+        $this->_companyService = $companyService;
     }
 
     /**
-     * Show the form for creating a new resource.
+     * @return View
      */
-    public function create()
+    public function index(): View
     {
-        $companies = Company::all();
+        $employees = $this->_employeesService->getAll();
+        return view('admin.employees.employees', compact('employees'));
+    }
+
+    /**
+     * @return View
+     */
+    public function create(): View
+    {
+        $companies = $this->_companyService->getAll();
+
         return view('admin.employees.form', compact('companies'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * @param Request $request
+     * @return RedirectResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'company_id' => 'required|exists:companies,id',
-            'email' => 'nullable|email',
-            'phone' => 'nullable|string|max:20',
-        ]);
+        $data = $request->validate(
+            [
+                'first_name' => 'required|string|max:255',
+                'last_name' => 'required|string|max:255',
+                'company_id' => 'required|exists:companies,id',
+                'email' => 'nullable|email',
+                'phone' => 'nullable|string|max:20',
+            ],
+            [
+                'first_name.required' => 'Поле "І`мя" обов`язкове для заповнення',
+                'first_name.string' => 'Поле "І`мя" повинно бути рядком',
+                'first_name.max:255' => 'Поле "І`мя" приймае максимум 255 літер',
+                'last_name.required' => 'Поле "Прізвище" обов`язкове для заповнення',
+                'last_name.string' => 'Поле "Прізвище" повинно бути рядком',
+                'last_name.max:255' => 'Поле "Прізвище" приймае максимум 255 літер',
+                'company_id.required' => 'Виберіть компанію',
+                'email.email' => 'Будь ласка, перевірте формат поля "Email"',
+                'phone.string' => 'Поле "І`мя" повинно бути рядком',
+                'phone.max:20' => 'Поле "І`мя" приймае максимум 20 цифр',
+            ]
+        );
 
-        Employee::create($validated);
+        $this->_employeesService->storeEmployee($data);
 
-        return redirect()->route('employees.index')->with('success', 'Співробітника успішно додано');
+        return redirect()->route('employees.index')->with('success', "Співробітника {$request->first_name} {$request->last_name} успішно додано");
     }
 
     /**
-     * Display the specified resource.
+     * @param Employee $employee
+     * @return View
      */
-    public function show(Employee $employee)
+    public function show(Employee $employee): View
     {
-        $employee = Employee::findOrFail($employee);
-        return view('employees.show', compact('employee'));
+        return view('admin.employees.show', compact('employee'));
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * @param Employee $employee
+     * @return View
      */
-    public function edit(Employee $employee)
+    public function edit(Employee $employee): View
     {
-        $companies = Company::all();
+        $companies = $this->_companyService->getAll();
+
         return view('admin.employees.form', compact('employee', 'companies'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * @param Request $request
+     * @param Employee $employee
+     * @return RedirectResponse
      */
-    public function update(Request $request, Employee $employee)
+    public function update(Request $request, Employee $employee): RedirectResponse
     {
-        $validated = $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'company_id' => 'required|exists:companies,id',
-            'email' => 'nullable|email',
-            'phone' => 'nullable|string|max:20',
-        ]);
+        $data = $request->validate(
+            [
+                'first_name' => 'required|string|max:255',
+                'last_name' => 'required|string|max:255',
+                'company_id' => 'required|exists:companies,id',
+                'email' => 'nullable|email',
+                'phone' => 'nullable|string|max:20',
+            ],
+            [
+                'first_name.required' => 'Поле "І`мя" обов`язкове для заповнення',
+                'first_name.string' => 'Поле "І`мя" повинно бути рядком',
+                'first_name.max:255' => 'Поле "І`мя" приймае максимум 255 літер',
+                'last_name.required' => 'Поле "Прізвище" обов`язкове для заповнення',
+                'last_name.string' => 'Поле "Прізвище" повинно бути рядком',
+                'last_name.max:255' => 'Поле "Прізвище" приймае максимум 255 літер',
+                'company_id.required' => 'Виберіть компанію',
+                'email.email' => 'Будь ласка, перевірте формат поля "Email"',
+                'phone.string' => 'Поле "І`мя" повинно бути рядком',
+                'phone.max:20' => 'Поле "І`мя" приймае максимум 20 цифр',
+            ]
+        );
 
-        $employee->update($validated);
+        $this->_employeesService->updateEmployee($employee, $data);
 
-        return redirect()->route('employees.index')->with('success', 'Співробітника успішно оновлено');
+        return redirect()->route('employees.index')->with('success', "Співробітника {$request->first_name} {$request->last_name} успішно оновлено");
     }
 
     /**
-     * Remove the specified resource from storage.
+     * @param Employee $employee
+     * @return RedirectResponse
      */
-    public function destroy(Employee $employee)
+    public function destroy(Employee $employee): RedirectResponse
     {
-        $employee->delete();
+        $this->_employeesService->deleteEmployee($employee);
 
-        return redirect()->route('employees.index')->with('success', 'Співробітника успішно видалено');
+        return redirect()->route('employees.index')->with('success', "Співробітника {$employee->first_name} {$employee->last_name} успішно видалено");
     }
 }

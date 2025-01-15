@@ -3,40 +3,53 @@
 namespace App\Services;
 
 use App\Models\Company;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Collection;
 
 class CompanyService
 {
-    public function createCompany(array $data)
+    /**
+     * @param array $data
+     * @return Company
+     */
+    public function storeCompany(array $data): Company
     {
-        $company = Company::create([
+        return Company::create([
             'name' => $data['name'],
             'email' => $data['email'],
-            'logo' => $this->uploadLogo($data['logo']),
+            'logo' => $data['logo'],
             'website' => $data['website'],
         ]);
-
-        return $company;
     }
 
-    public function updateCompany(Company $company, array $data)
+    /**
+     * @param Company $company
+     * @param array $data
+     * @return bool
+     */
+    public function updateCompany(Company $company, array $data): bool
     {
-        $company->update([
+        return $company->update([
             'name' => $data['name'],
             'email' => $data['email'],
-            'logo' => $this->uploadLogo($data['logo']),
+            'logo' => $data['logo'],
             'website' => $data['website'],
         ]);
-
-        return $company;
     }
 
-    private function uploadLogo($logo)
+    /**
+     * @param Company $company
+     * @return void
+     */
+    public function deleteCompany(Company $company): void
     {
-        if ($logo) {
-            $path = $logo->store('logos');
-            return $path;
-        }
-        return null;
+        $company->delete();
+    }
+
+    /**
+     * @return Collection
+     */
+    public function getAll(): Collection
+    {
+        return Company::all();
     }
 }
